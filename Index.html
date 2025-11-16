@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusFlow - Study Companion</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #8B9DC3;
+            --secondary-color: #B5C8E0;
+            --accent-color: #F5A9B8;
+            --background-color: #F7F9FC;
+            --text-color: #333344;
+            --card-color: #FFFFFF;
+            --success-color: #A3D9B1;
+            --warning-color: #F9E79F;
+            --danger-color: #F5B7B1;
+            --border-radius: 16px;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+        }
+
+        .dark-theme {
+            --primary-color: #6B7B9C;
+            --secondary-color: #8A9BB8;
+            --accent-color: #D48A98;
+            --background-color: #1E1E2E;
+            --text-color: #E2E2E2;
+            --card-color: #2D2D44;
+            --success-color: #7BBF87;
+            --warning-color: #D9C56F;
+            --danger-color: #D59792;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .pastel-theme {
+            --primary-color: #B8C7E0;
+            --secondary-color: #D4E2F5;
+            --accent-color: #FFD1DC;
+            --background-color: #FFF9FB;
+            --text-color: #5A5A72;
+            --card-color: #FFFFFF;
+            --success-color: #C8E6C9;
+            --warning-color: #FFECB3;
+            --danger-color: #FFCDD2;
+        }
+
+        .nature-theme {
+            --primary-color: #7BA998;
+            --secondary-color: #A8C8B9;
+            --accent-color: #E8B796;
+            --background-color: #F5F9F7;
+            --text-color: #3A5249;
+            --card-color: #FFFFFF;
+            --success-color: #9BC1A6;
+            --warning-color: #E8D4A2;
+            --danger-color: #E8A2A2;
+        }
+
+        .ocean-theme {
+            --primary-color: #6BA3B8;
+            --secondary-color: #9AC7D9;
+            --accent-color: #FFB6A3;
+            --background-color: #F0F7FA;
+            --text-color: #2C4A57;
+            --card-color: #FFFFFF;
+            --success-color: #87C5A4;
+            --warning-color: #FFD8A6;
+            --danger-color: #FFA6A6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: var(--transition);
+            padding-bottom: 100px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 15px;
+            background-color: var(--card-color);
+            box-shadow: var(--shadow);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .export-btn, .settings-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 50%;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .export-btn:hover, .settings-btn:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        .settings {
+            position: relative;
+        }
+
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: var(--card-color);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+            padding: 10px 0;
+            width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: var(--transition);
+            z-index: 10;
+        }
+
+        .dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 20px 0;
+        }
+
+        .current-day {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .current-day:hover {
+            transform: translateY(-5px);
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .day-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .date {
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .section-title {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            font-size: 1.1rem;
+        }
+
+        /* Timetable */
+        .timetable-container {
+            overflow-x: auto;
+            margin-bottom: 30px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .timetable {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            min-width: 900px;
+        }
+
+        .week-column {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 15px;
+            transition: var(--transition);
+        }
+
+        .week-column:hover {
+            transform: translateY(-3px);
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--secondary-color);
+        }
+
+        .week-title {
+            font-weight: 600;
+        }
+
+        .week-dates {
+            font-size: 0.8rem;
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .add-week-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .add-week-btn:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        .day {
+            margin-bottom: 15px;
+        }
+
+        .day-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .time-slot {
+            background-color: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-slot:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .time-slot::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background-color: var(--accent-color);
+        }
+
+        .slot-info {
+            flex: 1;
+        }
+
+        .slot-time {
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            margin-bottom: 3px;
+            font-weight: 500;
+        }
+
+        .slot-activity {
+            font-size: 0.9rem;
+        }
+
+        .slot-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .edit-btn, .tick-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--primary-color);
+            transition: var(--transition);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .edit-btn:hover, .tick-btn:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        .tick-btn.completed {
+            color: var(--success-color);
+        }
+
+        .add-slot-btn {
+            background-color: var(--secondary-color);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 10px;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            width: 100%;
+        }
+
+        .add-slot-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Break Timer */
+        .break-timer {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: var(--transition);
+        }
+
+        .break-timer:hover {
+            transform: translateY(-5px);
+        }
+
+        .timer-display {
+            font-size: 2.5rem;
+            margin: 15px 0;
+            color: var(--primary-color);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-status {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .timer-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .timer-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .timer-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Progress Garden */
+        .progress-garden-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, var(--success-color), var(--primary-color));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 14px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            z-index: 90;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-garden-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+        }
+
+        .progress-garden-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .progress-garden-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .progress-garden-content {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            transform: scale(0.9);
+            transition: var(--transition);
+        }
+
+        .progress-garden-modal.show .progress-garden-content {
+            transform: scale(1);
+        }
+
+        .garden-world {
+            background: linear-gradient(to bottom, #87CEEB, #B8E0D2);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .clouds {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .cloud {
+            width: 40px;
+            height: 20px;
+            background-color: white;
+            border-radius: 20px;
+            position: relative;
+            animation: floatCloud 20s infinite linear;
+        }
+
+        .cloud:nth-child(2) {
+            animation-delay: -5s;
+        }
+
+        .cloud:nth-child(3) {
+            animation-delay: -10s;
+        }
+
+        .cloud:before, .cloud:after {
+            content: '';
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+        }
+
+        .cloud:before {
+            width: 20px;
+            height: 20px;
+            top: -10px;
+            left: 5px;
+        }
+
+        .cloud:after {
+            width: 25px;
+            height: 25px;
+            top: -12px;
+            right: 5px;
+        }
+
+        .garden-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 120px;
+        }
+
+        .progress-stats {
+            margin-top: 20px;
+        }
+
+        .stats-title {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .stat-item {
+            background-color: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 12px;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* Baba Assistant */
+        .baba-assistant {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 90;
+        }
+
+        .baba-bubble {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            animation: float 4s ease-in-out infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .baba-bubble:hover {
+            transform: scale(1.1);
+        }
+
+        .baba-bubble::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+        }
+
+        .baba-icon {
+            font-size: 2.2rem;
+            filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+        }
+
+        .baba-chat {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            width: 280px;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px) scale(0.9);
+            transition: var(--transition);
+        }
+
+        .baba-chat.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .baba-message {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .baba-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .baba-btn {
+            flex: 1;
+            background-color: var(--secondary-color);
+            border: none;
+            border-radius: var(--border-radius);
+            padding: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .baba-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Modal for editing time */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: var(--shadow);
+            transform: scale(0.9);
+            transition: var(--transition);
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--secondary-color);
+            border-radius: var(--border-radius);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(139, 157, 195, 0.2);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 15px 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(100%);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 300px;
+        }
+
+        .notification.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes floatCloud {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(calc(100vw + 100px)); }
+        }
+
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-color);
+            top: 0;
+            opacity: 0;
+            z-index: 1000;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .timetable {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .timetable {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        /* Touch improvements */
+        button, .dropdown-item {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">FocusFlow</div>
+        <div class="header-actions">
+            <button class="export-btn" id="export-btn">
+                <i class="fas fa-download"></i>
+            </button>
+            <div class="settings">
+                <button class="settings-btn">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <div class="dropdown">
+                    <div class="dropdown-item" id="logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </div>
+                    <div class="dropdown-item" id="clear-data">
+                        <i class="fas fa-trash"></i>
+                        <span>Clear All Data</span>
+                    </div>
+                    <div class="dropdown-item" id="change-theme">
+                        <i class="fas fa-palette"></i>
+                        <span>Change Theme</span>
+                    </div>
+                    <div class="dropdown-item" id="view-all-weeks">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>View All Weeks</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-content">
+            <!-- Current Day Section -->
+            <div class="current-day">
+                <div class="day-header">
+                    <div class="day-title" id="current-day">Monday</div>
+                    <div class="date" id="current-date">June 10, 2023</div>
+                </div>
+                <div id="current-day-slots">
+                    <!-- Current day slots will be populated by JavaScript -->
+                </div>
+                <button class="add-slot-btn" id="add-current-slot">
+                    <i class="fas fa-plus"></i> Add Slot
+                </button>
+            </div>
+
+            <h2 class="section-title"><i class="fas fa-clock"></i> Focus Timer</h2>
+            <div class="break-timer">
+                <div class="timer-status" id="timer-status">Ready to focus?</div>
+                <div class="timer-display" id="timer-display">25:00</div>
+                <button class="timer-btn" id="timer-btn">Start Focus Session</button>
+            </div>
+
+            <h2 class="section-title"><i class="fas fa-calendar-week"></i> Weekly Plan</h2>
+            <div class="timetable-container">
+                <div class="timetable" id="timetable">
+                    <!-- Weeks will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Garden Button -->
+    <button class="progress-garden-btn" id="progress-garden-btn">
+        <i class="fas fa-seedling"></i>
+        Progress Garden
+    </button>
+
+    <!-- Progress Garden Modal -->
+    <div class="progress-garden-modal" id="progress-garden-modal">
+        <div class="progress-garden-content">
+            <h2 class="section-title">Progress Garden</h2>
+            <div class="garden-world">
+                <div class="clouds">
+                    <div class="cloud"></div>
+                    <div class="cloud"></div>
+                    <div class="cloud"></div>
+                </div>
+                <div class="garden-container">
+                    <div class="plant" id="plant">
+                        <div style="font-size: 3rem;">🌱</div>
+                    </div>
+                </div>
+            </div>
+            <div class="progress-stats">
+                <h3 class="stats-title">Your Progress</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="completed-tasks">0</div>
+                        <div class="stat-label">Tasks Completed</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="focus-sessions">0</div>
+                        <div class="stat-label">Focus Sessions</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="current-streak">0</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="productivity">0%</div>
+                        <div class="stat-label">Productivity</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Baba Assistant -->
+    <div class="baba-assistant">
+        <div class="baba-chat" id="baba-chat">
+            <div class="baba-message" id="baba-message">Hello! Ready to focus today? You're doing amazing!</div>
+            <div class="baba-actions">
+                <button class="baba-btn" id="baba-motivate">Motivate me!</button>
+                <button class="baba-btn" id="baba-joke">Tell a joke</button>
+            </div>
+        </div>
+        <div class="baba-bubble" id="baba-bubble">
+            <div class="baba-icon">🐼</div>
+        </div>
+    </div>
+
+    <!-- Edit Time Slot Modal -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Edit Time Slot</h2>
+            <div class="form-group">
+                <label class="form-label" for="edit-time">Time</label>
+                <input type="text" class="form-input" id="edit-time" placeholder="e.g., 7:00-8:30">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="edit-activity">Activity</label>
+                <input type="text" class="form-input" id="edit-activity" placeholder="e.g., Study">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancel-edit">Cancel</button>
+                <button class="btn btn-primary" id="save-edit">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- All Weeks View Modal -->
+    <div class="modal" id="all-weeks-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">All Weeks Overview</h2>
+            <div id="all-weeks-content" style="max-height: 60vh; overflow-y: auto;">
+                <!-- All weeks content will be populated by JavaScript -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="close-all-weeks">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-icon">
+            <i class="fas fa-bell"></i>
+        </div>
+        <div class="notification-content">
+            <div class="notification-title" id="notification-title">Timer Complete!</div>
+            <div class="notification-message" id="notification-message">Time for a break!</div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const settingsBtn = document.querySelector('.settings-btn');
+        const dropdown = document.querySelector('.dropdown');
+        const exportBtn = document.getElementById('export-btn');
+        const timetable = document.getElementById('timetable');
+        const timerBtn = document.getElementById('timer-btn');
+        const timerDisplay = document.getElementById('timer-display');
+        const timerStatus = document.getElementById('timer-status');
+        const progressGardenBtn = document.getElementById('progress-garden-btn');
+        const progressGardenModal = document.getElementById('progress-garden-modal');
+        const plant = document.getElementById('plant');
+        const babaBubble = document.getElementById('baba-bubble');
+        const babaChat = document.getElementById('baba-chat');
+        const babaMessage = document.getElementById('baba-message');
+        const babaMotivate = document.getElementById('baba-motivate');
+        const babaJoke = document.getElementById('baba-joke');
+        const changeThemeBtn = document.getElementById('change-theme');
+        const viewAllWeeksBtn = document.getElementById('view-all-weeks');
+        const allWeeksModal = document.getElementById('all-weeks-modal');
+        const closeAllWeeksBtn = document.getElementById('close-all-weeks');
+        const allWeeksContent = document.getElementById('all-weeks-content');
+        const editModal = document.getElementById('edit-modal');
+        const cancelEditBtn = document.getElementById('cancel-edit');
+        const saveEditBtn = document.getElementById('save-edit');
+        const editTimeInput = document.getElementById('edit-time');
+        const editActivityInput = document.getElementById('edit-activity');
+        const currentDayElement = document.getElementById('current-day');
+        const currentDateElement = document.getElementById('current-date');
+        const currentDaySlots = document.getElementById('current-day-slots');
+        const addCurrentSlotBtn = document.getElementById('add-current-slot');
+        const completedTasksElement = document.getElementById('completed-tasks');
+        const focusSessionsElement = document.getElementById('focus-sessions');
+        const currentStreakElement = document.getElementById('current-streak');
+        const productivityElement = document.getElementById('productivity');
+        const notification = document.getElementById('notification');
+        const notificationTitle = document.getElementById('notification-title');
+        const notificationMessage = document.getElementById('notification-message');
+
+        // State variables
+        let timerInterval;
+        let timerSeconds = 25 * 60; // 25 minutes in seconds
+        let isTimerRunning = false;
+        let isBreakTime = false;
+        let focusSessionsCompleted = 0;
+        let currentTheme = 'light';
+        let currentEditingSlot = null;
+        let completedTasksCount = 0;
+        let currentStreak = 0;
+        let lastActivityDate = null;
+        let timerCycleCount = 0;
+
+        // Sample timetable data
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const defaultTimeSlots = [
+            { time: '7:00-8:30', activity: 'Study' },
+            { time: '8:30-10:00', activity: 'Any activity' },
+            { time: '10:00-11:00', activity: 'Revision' }
+        ];
+
+        // Baba messages
+        const motivateMessages = [
+            "You're doing amazing!",
+            "Keep going, you've got this!",
+            "One step at a time, you're making progress!",
+            "Your focus is your superpower!",
+            "I'm so proud of your dedication!",
+            "Every minute of focus brings you closer to your goals!",
+            "You're building habits that will last a lifetime!"
+        ];
+
+        const jokeMessages = [
+            "Why did the student eat her homework? Because the teacher said it was a piece of cake!",
+            "Why was the math book sad? It had too many problems!",
+            "What's a tree's favorite subject? Geometry!",
+            "Why did the student bring a ladder to school? To go to high school!",
+            "What did the pencil say to the other pencil? You're looking sharp!",
+            "Why did the scarecrow win an award? Because he was outstanding in his field!",
+            "What do you call a sleeping bull? A bulldozer!"
+        ];
+
+        // Initialize the app
+        function initApp() {
+            setCurrentDate();
+            loadFromLocalStorage();
+            generateTimetable();
+            setupEventListeners();
+            updateProgressStats();
+            
+            // Show welcome message from Baba
+            setTimeout(() => {
+                babaMessage.textContent = "Welcome back! Ready to have a productive day?";
+                babaChat.classList.add('show');
+            }, 1000);
+        }
+
+        // Set current date and day
+        function setCurrentDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            currentDayElement.textContent = now.toLocaleDateString('en-US', { weekday: 'long' });
+            currentDateElement.textContent = now.toLocaleDateString('en-US', options);
+            
+            // Generate current day slots
+            generateCurrentDaySlots();
+        }
+
+        // Generate current day slots
+        function generateCurrentDaySlots() {
+            currentDaySlots.innerHTML = '';
+            
+            // Get today's day index (0 = Sunday, 1 = Monday, etc.)
+            const todayIndex = new Date().getDay();
+            // Convert to our days array index (0 = Monday)
+            const adjustedIndex = todayIndex === 0 ? 6 : todayIndex - 1;
+            
+            // Add time slots for today
+            defaultTimeSlots.forEach(slot => {
+                const timeSlot = createTimeSlot(slot.time, slot.activity, true);
+                currentDaySlots.appendChild(timeSlot);
+            });
+        }
+
+        // Generate timetable with weeks and days
+        function generateTimetable() {
+            timetable.innerHTML = '';
+            
+            // Get current date
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            
+            // Calculate the first day of the current month
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+            const startingDay = firstDayOfMonth.getDay(); // 0 = Sunday, 1 = Monday, etc.
+            
+            // Adjust to our week starting on Monday
+            const adjustedStartingDay = startingDay === 0 ? 6 : startingDay - 1;
+            
+            // Calculate the number of days in the current month
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            // Calculate how many weeks we need to display
+            const totalDays = adjustedStartingDay + daysInMonth;
+            const weeksNeeded = Math.ceil(totalDays / 7);
+            
+            // Create weeks based on the current month
+            for (let week = 0; week < weeksNeeded; week++) {
+                const weekColumn = document.createElement('div');
+                weekColumn.className = 'week-column';
+                
+                const weekHeader = document.createElement('div');
+                weekHeader.className = 'week-header';
+                
+                const weekTitle = document.createElement('div');
+                weekTitle.className = 'week-title';
+                weekTitle.textContent = `Week ${week + 1}`;
+                
+                // Calculate dates for this week
+                const startDate = week * 7 - adjustedStartingDay + 1;
+                const endDate = Math.min(startDate + 6, daysInMonth);
+                
+                const weekDates = document.createElement('div');
+                weekDates.className = 'week-dates';
+                if (startDate > 0 && endDate > 0) {
+                    weekDates.textContent = `${startDate} - ${endDate} ${now.toLocaleDateString('en-US', { month: 'short' })}`;
+                } else {
+                    // Handle dates from previous/next month
+                    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+                    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+                    const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+                    const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+                    
+                    const prevMonthDays = new Date(prevYear, prevMonth + 1, 0).getDate();
+                    
+                    if (startDate <= 0) {
+                        const prevStart = prevMonthDays + startDate;
+                        weekDates.textContent = `${prevStart} - ${endDate} ${now.toLocaleDateString('en-US', { month: 'short' })}`;
+                    } else {
+                        const nextEnd = endDate - daysInMonth;
+                        weekDates.textContent = `${startDate} - ${nextEnd} ${now.toLocaleDateString('en-US', { month: 'short' })}`;
+                    }
+                }
+                
+                const addWeekBtn = document.createElement('button');
+                addWeekBtn.className = 'add-week-btn';
+                addWeekBtn.innerHTML = '<i class="fas fa-plus"></i>';
+                addWeekBtn.addEventListener('click', () => addNewWeek());
+                
+                weekHeader.appendChild(weekTitle);
+                weekHeader.appendChild(addWeekBtn);
+                weekColumn.appendChild(weekHeader);
+                weekColumn.appendChild(weekDates);
+                
+                // Add days to the week
+                days.forEach((day, dayIndex) => {
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'day';
+                    
+                    const dayTitle = document.createElement('div');
+                    dayTitle.className = 'day-title';
+                    
+                    // Calculate the date for this day
+                    const dayDate = startDate + dayIndex;
+                    let displayDate = '';
+                    
+                    if (dayDate > 0 && dayDate <= daysInMonth) {
+                        displayDate = ` (${dayDate})`;
+                    } else if (dayDate <= 0) {
+                        // Previous month
+                        const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+                        const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+                        const prevMonthDays = new Date(prevYear, prevMonth + 1, 0).getDate();
+                        displayDate = ` (${prevMonthDays + dayDate})`;
+                    } else {
+                        // Next month
+                        displayDate = ` (${dayDate - daysInMonth})`;
+                    }
+                    
+                    dayTitle.textContent = day + displayDate;
+                    dayElement.appendChild(dayTitle);
+                    
+                    // Add time slots for each day
+                    defaultTimeSlots.forEach(slot => {
+                        const timeSlot = createTimeSlot(slot.time, slot.activity);
+                        dayElement.appendChild(timeSlot);
+                    });
+                    
+                    // Add "Add Slot" button
+                    const addSlotBtn = document.createElement('button');
+                    addSlotBtn.className = 'add-slot-btn';
+                    addSlotBtn.innerHTML = '<i class="fas fa-plus"></i> Add Slot';
+                    addSlotBtn.addEventListener('click', () => addNewTimeSlot(dayElement));
+                    dayElement.appendChild(addSlotBtn);
+                    
+                    weekColumn.appendChild(dayElement);
+                });
+                
+                timetable.appendChild(weekColumn);
+            }
+        }
+
+        // Create a time slot element
+        function createTimeSlot(time, activity, isCurrentDay = false) {
+            const timeSlot = document.createElement('div');
+            timeSlot.className = 'time-slot';
+            if (isCurrentDay) {
+                timeSlot.style.borderLeft = `4px solid var(--accent-color)`;
+            }
+            
+            const slotInfo = document.createElement('div');
+            slotInfo.className = 'slot-info';
+            
+            const slotTime = document.createElement('div');
+            slotTime.className = 'slot-time';
+            slotTime.textContent = time;
+            
+            const slotActivity = document.createElement('div');
+            slotActivity.className = 'slot-activity';
+            slotActivity.textContent = activity;
+            
+            slotInfo.appendChild(slotTime);
+            slotInfo.appendChild(slotActivity);
+            
+            const slotActions = document.createElement('div');
+            slotActions.className = 'slot-actions';
+            
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-btn';
+            editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openEditModal(timeSlot, slotTime, slotActivity);
+            });
+            
+            const tickBtn = document.createElement('button');
+            tickBtn.className = 'tick-btn';
+            tickBtn.innerHTML = '<i class="far fa-circle"></i>';
+            tickBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleComplete(tickBtn);
+            });
+            
+            slotActions.appendChild(editBtn);
+            slotActions.appendChild(tickBtn);
+            
+            timeSlot.appendChild(slotInfo);
+            timeSlot.appendChild(slotActions);
+            
+            return timeSlot;
+        }
+
+        // Open edit modal for time slot
+        function openEditModal(timeSlot, timeElement, activityElement) {
+            currentEditingSlot = { timeSlot, timeElement, activityElement };
+            editTimeInput.value = timeElement.textContent;
+            editActivityInput.value = activityElement.textContent;
+            editModal.classList.add('show');
+        }
+
+        // Save edited time slot
+        function saveEditedTimeSlot() {
+            if (currentEditingSlot) {
+                currentEditingSlot.timeElement.textContent = editTimeInput.value;
+                currentEditingSlot.activityElement.textContent = editActivityInput.value;
+                editModal.classList.remove('show');
+                saveToLocalStorage();
+            }
+        }
+
+        // Add a new week to the timetable
+        function addNewWeek() {
+            const weekColumns = document.querySelectorAll('.week-column');
+            const weekNumber = weekColumns.length + 1;
+            
+            const weekColumn = document.createElement('div');
+            weekColumn.className = 'week-column';
+            
+            const weekHeader = document.createElement('div');
+            weekHeader.className = 'week-header';
+            
+            const weekTitle = document.createElement('div');
+            weekTitle.className = 'week-title';
+            weekTitle.textContent = `Week ${weekNumber}`;
+            
+            const addWeekBtn = document.createElement('button');
+            addWeekBtn.className = 'add-week-btn';
+            addWeekBtn.innerHTML = '<i class="fas fa-plus"></i>';
+            addWeekBtn.addEventListener('click', () => addNewWeek());
+            
+            weekHeader.appendChild(weekTitle);
+            weekHeader.appendChild(addWeekBtn);
+            weekColumn.appendChild(weekHeader);
+            
+            // Add days to the new week
+            days.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day';
+                
+                const dayTitle = document.createElement('div');
+                dayTitle.className = 'day-title';
+                dayTitle.textContent = day;
+                dayElement.appendChild(dayTitle);
+                
+                // Add empty time slots for each day
+                for (let i = 0; i < 3; i++) {
+                    const timeSlot = createTimeSlot('--:--', 'Add activity');
+                    dayElement.appendChild(timeSlot);
+                }
+                
+                // Add "Add Slot" button
+                const addSlotBtn = document.createElement('button');
+                addSlotBtn.className = 'add-slot-btn';
+                addSlotBtn.innerHTML = '<i class="fas fa-plus"></i> Add Slot';
+                addSlotBtn.addEventListener('click', () => addNewTimeSlot(dayElement));
+                dayElement.appendChild(addSlotBtn);
+                
+                weekColumn.appendChild(dayElement);
+            });
+            
+            timetable.appendChild(weekColumn);
+            saveToLocalStorage();
+        }
+
+        // Add a new time slot to a day
+        function addNewTimeSlot(dayElement) {
+            const timeSlot = createTimeSlot('--:--', 'Add activity');
+            const addSlotBtn = dayElement.querySelector('.add-slot-btn');
+            dayElement.insertBefore(timeSlot, addSlotBtn);
+            saveToLocalStorage();
+        }
+
+        // Add a new time slot to current day
+        function addNewTimeSlotToCurrentDay() {
+            const timeSlot = createTimeSlot('--:--', 'Add activity', true);
+            currentDaySlots.appendChild(timeSlot);
+            saveToLocalStorage();
+        }
+
+        // Toggle complete status of a time slot
+        function toggleComplete(tickBtn) {
+            const wasCompleted = tickBtn.classList.contains('completed');
+            
+            tickBtn.classList.toggle('completed');
+            if (tickBtn.classList.contains('completed')) {
+                tickBtn.innerHTML = '<i class="fas fa-check-circle"></i>';
+                completedTasksCount++;
+                
+                // Check if all tasks are completed for confetti
+                checkAllTasksCompleted();
+            } else {
+                tickBtn.innerHTML = '<i class="far fa-circle"></i>';
+                completedTasksCount = Math.max(0, completedTasksCount - 1);
+            }
+            
+            updateProgressStats();
+            saveToLocalStorage();
+        }
+
+        // Check if all tasks are completed and show confetti
+        function checkAllTasksCompleted() {
+            const allTickBtns = document.querySelectorAll('.tick-btn');
+            const completedTasks = Array.from(allTickBtns).filter(btn => btn.classList.contains('completed'));
+            
+            if (completedTasks.length === allTickBtns.length) {
+                showConfetti();
+                babaMessage.textContent = "Wow! You completed all your tasks! I'm so proud of you!";
+                babaChat.classList.add('show');
+                
+                // Grow the plant
+                growPlant();
+            }
+        }
+
+        // Show confetti animation
+        function showConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = getRandomColor();
+                confetti.style.animation = `confetti ${Math.random() * 3 + 2}s ease-out forwards`;
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
+        // Get random color for confetti
+        function getRandomColor() {
+            const colors = ['#F5A9B8', '#8B9DC3', '#B5C8E0', '#A3D9B1', '#F9E79F'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Grow the plant
+        function growPlant() {
+            const plantStages = [
+                '<div style="font-size: 3rem;">🌱</div>',
+                '<div style="font-size: 3.5rem;">🌿</div>',
+                '<div style="font-size: 4rem;">🍀</div>',
+                '<div style="font-size: 4.5rem;">🪴</div>',
+                '<div style="font-size: 5rem;">🌳</div>'
+            ];
+            
+            const currentStage = plantStages.indexOf(plant.innerHTML);
+            if (currentStage < plantStages.length - 1) {
+                plant.innerHTML = plantStages[currentStage + 1];
+                saveToLocalStorage();
+            }
+        }
+
+        // Update progress stats
+        function updateProgressStats() {
+            completedTasksElement.textContent = completedTasksCount;
+            focusSessionsElement.textContent = focusSessionsCompleted;
+            currentStreakElement.textContent = currentStreak;
+            
+            const totalTasks = document.querySelectorAll('.tick-btn').length;
+            const productivity = totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
+            productivityElement.textContent = `${productivity}%`;
+        }
+
+        // Show notification
+        function showNotification(title, message) {
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            notification.classList.add('show');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Timer functionality
+        function startTimer() {
+            if (isTimerRunning) return;
+            
+            isTimerRunning = true;
+            timerBtn.textContent = 'Pause Timer';
+            timerBtn.style.backgroundColor = 'var(--warning-color)';
+            
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    timerComplete();
+                    return;
+                }
+                
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            timerBtn.textContent = 'Resume Timer';
+            timerBtn.style.backgroundColor = 'var(--accent-color)';
+        }
+
+        function resetTimer() {
+            isTimerRunning = false;
+            clearInterval(timerInterval);
+            
+            if (isBreakTime) {
+                timerSeconds = 10 * 60; // 10 minutes for break
+                timerStatus.textContent = 'Break Time!';
+            } else {
+                timerSeconds = 25 * 60; // 25 minutes for focus
+                timerStatus.textContent = 'Focus Time';
+            }
+            
+            timerBtn.textContent = isBreakTime ? 'Start Break' : 'Start Focus Session';
+            timerBtn.style.backgroundColor = 'var(--accent-color)';
+            updateTimerDisplay();
+        }
+
+        function timerComplete() {
+            if (isBreakTime) {
+                // Break completed
+                focusSessionsCompleted++;
+                isBreakTime = false;
+                timerSeconds = 25 * 60;
+                timerStatus.textContent = 'Break Over! Back to Study!';
+                
+                // Show notification
+                showNotification("Break Complete!", "Time to get back to studying!");
+                babaMessage.textContent = "Break's over! Time to get back to studying. You're doing great!";
+                babaChat.classList.add('show');
+            } else {
+                // Focus session completed
+                isBreakTime = true;
+                timerSeconds = 10 * 60; // 10 minutes for break
+                timerStatus.textContent = 'Focus Session Complete! Take a Break!';
+                timerCycleCount++;
+                
+                // Show notification
+                showNotification("Focus Session Complete!", "Take a 10-minute break!");
+                babaMessage.textContent = "Great job completing a focus session! Time for a 10-minute break!";
+                babaChat.classList.add('show');
+            }
+            
+            timerBtn.textContent = isBreakTime ? 'Start Break' : 'Start Focus Session';
+            updateTimerDisplay();
+            updateProgressStats();
+            
+            // Auto-start the next timer after 3 seconds
+            setTimeout(() => {
+                startTimer();
+            }, 3000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Export to PDF or JPG
+        function exportTimetable() {
+            // Show loading state
+            const originalHTML = exportBtn.innerHTML;
+            exportBtn.innerHTML = '<div class="loading"></div>';
+            
+            // Use html2canvas to capture the timetable
+            html2canvas(document.querySelector('.main-content')).then(canvas => {
+                // Convert canvas to image
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                
+                // Create a temporary link to download the image
+                const link = document.createElement('a');
+                link.download = 'focusflow-timetable.jpg';
+                link.href = imgData;
+                link.click();
+                
+                // Restore original button state
+                exportBtn.innerHTML = originalHTML;
+                
+                // Show success message
+                babaMessage.textContent = "Timetable exported successfully! Great job organizing your schedule!";
+                babaChat.classList.add('show');
+            });
+        }
+
+        // Show all weeks view
+        function showAllWeeksView() {
+            allWeeksContent.innerHTML = '';
+            
+            // Create a simplified view of all weeks
+            const weekColumns = document.querySelectorAll('.week-column');
+            
+            weekColumns.forEach((weekColumn, index) => {
+                const weekElement = document.createElement('div');
+                weekElement.className = 'week-column';
+                weekElement.style.marginBottom = '20px';
+                
+                const weekHeader = document.createElement('div');
+                weekHeader.className = 'week-header';
+                
+                const weekTitle = document.createElement('div');
+                weekTitle.className = 'week-title';
+                weekTitle.textContent = `Week ${index + 1}`;
+                weekHeader.appendChild(weekTitle);
+                
+                weekElement.appendChild(weekHeader);
+                
+                // Add days to the week
+                days.forEach(day => {
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'day';
+                    
+                    const dayTitle = document.createElement('div');
+                    dayTitle.className = 'day-title';
+                    dayTitle.textContent = day;
+                    dayElement.appendChild(dayTitle);
+                    
+                    // Add time slots for each day (simplified)
+                    for (let i = 0; i < 3; i++) {
+                        const timeSlot = document.createElement('div');
+                        timeSlot.className = 'time-slot';
+                        timeSlot.style.padding = '8px';
+                        timeSlot.style.marginBottom = '5px';
+                        
+                        const slotInfo = document.createElement('div');
+                        slotInfo.className = 'slot-info';
+                        
+                        const slotTime = document.createElement('div');
+                        slotTime.className = 'slot-time';
+                        slotTime.textContent = '7:00-8:30';
+                        slotTime.style.fontSize = '0.7rem';
+                        
+                        const slotActivity = document.createElement('div');
+                        slotActivity.className = 'slot-activity';
+                        slotActivity.textContent = 'Study';
+                        slotActivity.style.fontSize = '0.8rem';
+                        
+                        slotInfo.appendChild(slotTime);
+                        slotInfo.appendChild(slotActivity);
+                        timeSlot.appendChild(slotInfo);
+                        dayElement.appendChild(timeSlot);
+                    }
+                    
+                    weekElement.appendChild(dayElement);
+                });
+                
+                allWeeksContent.appendChild(weekElement);
+            });
+            
+            allWeeksModal.classList.add('show');
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Settings dropdown
+            settingsBtn.addEventListener('click', () => {
+                dropdown.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.settings')) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            // Export button
+            exportBtn.addEventListener('click', exportTimetable);
+
+            // Timer button
+            timerBtn.addEventListener('click', () => {
+                if (!isTimerRunning) {
+                    startTimer();
+                } else {
+                    pauseTimer();
+                }
+            });
+
+            // Progress Garden button
+            progressGardenBtn.addEventListener('click', () => {
+                progressGardenModal.classList.add('show');
+            });
+
+            // Close progress garden modal when clicking outside
+            progressGardenModal.addEventListener('click', (e) => {
+                if (e.target === progressGardenModal) {
+                    progressGardenModal.classList.remove('show');
+                }
+            });
+
+            // Baba assistant
+            babaBubble.addEventListener('click', () => {
+                babaChat.classList.toggle('show');
+            });
+
+            // Baba motivate button
+            babaMotivate.addEventListener('click', () => {
+                const randomMessage = motivateMessages[Math.floor(Math.random() * motivateMessages.length)];
+                babaMessage.textContent = randomMessage;
+            });
+
+            // Baba joke button
+            babaJoke.addEventListener('click', () => {
+                const randomJoke = jokeMessages[Math.floor(Math.random() * jokeMessages.length)];
+                babaMessage.textContent = randomJoke;
+            });
+
+            // Change theme
+            changeThemeBtn.addEventListener('click', () => {
+                const themes = ['light', 'dark', 'pastel', 'nature', 'ocean'];
+                const currentIndex = themes.indexOf(currentTheme);
+                const nextIndex = (currentIndex + 1) % themes.length;
+                currentTheme = themes[nextIndex];
+                
+                document.body.className = `${currentTheme}-theme`;
+                saveToLocalStorage();
+            });
+
+            // View all weeks
+            viewAllWeeksBtn.addEventListener('click', showAllWeeksView);
+
+            // Close all weeks view
+            closeAllWeeksBtn.addEventListener('click', () => {
+                allWeeksModal.classList.remove('show');
+            });
+
+            // Edit modal actions
+            cancelEditBtn.addEventListener('click', () => {
+                editModal.classList.remove('show');
+            });
+
+            saveEditBtn.addEventListener('click', saveEditedTimeSlot);
+
+            // Add slot to current day
+            addCurrentSlotBtn.addEventListener('click', addNewTimeSlotToCurrentDay);
+
+            // Clear data
+            document.getElementById('clear-data').addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            });
+
+            // Logout (placeholder)
+            document.getElementById('logout').addEventListener('click', () => {
+                alert('Logout functionality would be implemented here!');
+            });
+        }
+
+        // Save to localStorage
+        function saveToLocalStorage() {
+            const appData = {
+                theme: currentTheme,
+                completedTasks: completedTasksCount,
+                focusSessions: focusSessionsCompleted,
+                currentStreak: currentStreak,
+                plantStage: plant.innerHTML,
+                timerCycleCount: timerCycleCount
+            };
+            
+            localStorage.setItem('focusFlowData', JSON.stringify(appData));
+        }
+
+        // Load from localStorage
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('focusFlowData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                currentTheme = data.theme || 'light';
+                completedTasksCount = data.completedTasks || 0;
+                focusSessionsCompleted = data.focusSessions || 0;
+                currentStreak = data.currentStreak || 0;
+                timerCycleCount = data.timerCycleCount || 0;
+                
+                document.body.className = `${currentTheme}-theme`;
+                
+                if (data.plantStage) {
+                    plant.innerHTML = data.plantStage;
+                }
+            }
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
